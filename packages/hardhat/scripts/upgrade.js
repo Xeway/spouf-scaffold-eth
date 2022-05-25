@@ -1,6 +1,8 @@
 // upgrade.js is used to deploy a new version of a contract on the Kovan network
 
-const proxyAddress = "0x9052897901aDAa3007F58613b4461a14a9E8E60c";
+const { proxies } = require("../.openzeppelin/kovan.json");
+
+const proxyAddress = proxies[proxies.length - 1].address;
 
 async function main() {
 
