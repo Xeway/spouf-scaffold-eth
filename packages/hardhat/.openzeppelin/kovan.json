@@ -1,0 +1,161 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x2668DAB82Ea6B73701B879E06d3632FEC9007dAe",
+    "txHash": "0x2a3afca378f7f9c3ff7e5eef06585e9afc29dd242f55260ae9fac91bac0a3afe"
+  },
+  "proxies": [
+    {
+      "address": "0x04baA71E9917de0d2e70aA3C492cDD14f0c76a56",
+      "txHash": "0xb6db19c9cf35eff5a1c65bf135ff95d11060ba52116fcb37d14439d4df7ed490",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4Fd9929C039dDE57CBD3A0ac9DcE7FFb224dD3Ef",
+      "txHash": "0xff5ad41b3b5ae403471ec87c05ea4404ca0400e8ecb1f2baa0725f449b70b94a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6bB25c6350c0F26d54C6C6469cC8194895764C9B",
+      "txHash": "0x496b52daa7d94c141249f621121f657ed2bea835ccd935dc91d345b49bfbad48",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9052897901aDAa3007F58613b4461a14a9E8E60c",
+      "txHash": "0xc19fe3e54965c2ffae0ee4d12813f5b2932552f81fd9c3082fd4d76d4594ebcb",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "19c1e4fb393a7b9042e039d108d9d21b0f7abdaaed8a63b2999ce4501494b5c8": {
+      "address": "0xDEB9713AF5e0be06BbAe5fF4156Cd803aABD59bF",
+      "txHash": "0x79b3fa0a8abeefd44f8cfed1001a5fd7dc9a82dc1f89a825b3aae437d8e77348",
+      "layout": {
+        "storage": [
+          {
+            "label": "globalBalance",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:14"
+          },
+          {
+            "label": "usersCommitted",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:33"
+          },
+          {
+            "label": "individualGoals",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_array(t_struct(Goal)485_storage)dyn_storage)",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:34"
+          },
+          {
+            "label": "initialized",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bool",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:41"
+          },
+          {
+            "label": "USDC",
+            "offset": 1,
+            "slot": "3",
+            "type": "t_contract(IERC20)135",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:42"
+          },
+          {
+            "label": "LINK",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IERC20)135",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Goal)485_storage)dyn_storage": {
+            "label": "struct Spouf.Goal[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IERC20)135": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_enum(GoalStatus)475": {
+            "label": "enum Spouf.GoalStatus",
+            "members": [
+              "Created",
+              "Completed",
+              "Expired",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_array(t_struct(Goal)485_storage)dyn_storage)": {
+            "label": "mapping(address => struct Spouf.Goal[])",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Goal)485_storage": {
+            "label": "struct Spouf.Goal",
+            "members": [
+              {
+                "label": "goal",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(GoalStatus)475",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    }
+  }
+}
