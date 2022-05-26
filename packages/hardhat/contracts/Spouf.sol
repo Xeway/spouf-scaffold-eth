@@ -42,7 +42,7 @@ contract Spouf is KeeperCompatibleInterface {
     IERC20 USDC;
     IERC20 LINK;
 
-    uint constant LINK_FEES = 0.2 ether;
+    uint public constant LINK_FEES = 0.2 ether;
 
     // constructor
     function initialize(address _USDCAddress, address _LINKAddress) public {

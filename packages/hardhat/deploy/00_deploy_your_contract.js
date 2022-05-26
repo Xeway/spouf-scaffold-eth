@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const { abi } = require("../artifacts/contracts/Spouf.sol/Spouf.json");
+const ERC20Abi = require("../ERC20_ABI.json");
 
 let obj = {
   42: {
@@ -32,7 +33,15 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     abi: abi
   }};
 
-  console.log(obj);
+  obj["42"].kovan.contracts = {...obj["42"].kovan.contracts, USDC: {
+    address: "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
+    abi: ERC20Abi
+  }};
+
+  obj["42"].kovan.contracts = {...obj["42"].kovan.contracts, LINK: {
+    address: "0xa36085F69e2889c224210F603D836748e7dC0088",
+    abi: ERC20Abi
+  }};
 
   fs.writeFileSync("../react-app/src/contracts/hardhat_contracts.json", JSON.stringify(obj, null, 3), (err) => {
     if (err) {
