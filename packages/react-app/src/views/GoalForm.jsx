@@ -6,10 +6,16 @@ import { useState } from "react";
 
 function GoalForm({ readContracts, writeContracts, tx }) {
     let [linkFees, setLinkFees]= useState("");
-
-    useEffect(async () => {
-        setLinkFees(utils.formatUnits(await readContracts.Spouf.LINK_FEES(), 18));
-    }, []);
+    
+    useEffect(() => {
+        async function fetchFees() {
+          const fees = await readContracts.Spouf.LINK_FEES();
+          setLinkFees(utils.formatUnits(fees, 18));
+        }
+        if (readContracts.Spouf !== undefined) {
+          fetchFees();
+        };
+    }, [readContracts.Spouf]);
     
     const [goal, setGoal] = useState({
         name: "",
@@ -35,6 +41,8 @@ function GoalForm({ readContracts, writeContracts, tx }) {
 
   return (
     <div style={{ border: "1px solid #cccccc", padding: 16, width: 600, margin: "auto", marginTop: 64, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+      <h1>Define your goal</h1>
+      
       <h3>Goal's name:</h3>
       <div style={{ margin: 8, width: "50%" }}>
         <Input type="text" placeholder="Get a Six Pack 💪" required
@@ -70,21 +78,25 @@ function GoalForm({ readContracts, writeContracts, tx }) {
       style={{ marginTop: 8, width: "30%" }}
       onClick={async () => {
           // USDC approval
-        tx(writeContracts.USDC.approve(writeContracts.Spouf.address, goal.amount)).then(() => {
-            // LINK approval
-            tx(writeContracts.LINK.approve(writeContracts.Spouf.address, convertNumber("0.2", 18))).then(async () => {
+        tx(writeContracts.USDC.approve(writeContracts.Spouf.address, goal.amount)).then((USDCTx) => {
+          // LINK approval
+          if (USDCTx) {
+            tx(writeContracts.LINK.approve(writeContracts.Spouf.address, convertNumber("0.2", 18))).then(async (LINKTx) => {
+              if (LINKTx) {
                 await tx(writeContracts.Spouf.setGoal(
-                    goal.name,
-                    goal.deadline,
-                    goal.amount,
-                    { gasLimit: 300000 }
+                  goal.name,
+                  goal.deadline,
+                  goal.amount,
+                  { gasLimit: 300000 }
                 ));
+              }
             });
+          }
         });
       }}
       >Create goal</Button>
       <div style={{ margin: 8 }}>
-        <b>You'll have to accept 3 transactions coming one after another:</b>
+        <span style={{ fontWeight: "bold" }}>You'll have to accept 3 transactions coming one after another:</span>
         <ul style={{ textAlign: "start", listStylePosition: "inside" }}>
             <li>1. Grant the permission for the contract to receive your USDC</li>
             <li>2. Grant he permission for the contract to receive your { linkFees } LINK (used to pay for fees with Chainlink Keepers)</li>
