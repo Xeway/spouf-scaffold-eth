@@ -12,6 +12,7 @@ function GoalForm({ readContracts, writeContracts, tx }) {
           const fees = await readContracts.Spouf.LINK_FEES();
           setLinkFees(utils.formatUnits(fees, 18));
         }
+
         if (readContracts.Spouf !== undefined) {
           fetchFees();
         };
@@ -53,13 +54,13 @@ function GoalForm({ readContracts, writeContracts, tx }) {
 
       <h3>Deadline:</h3>
       <div style={{ margin: 8, width: "50%" }}>
-        <Input type="datetime-local" min="
+        <Input type="datetime-local" min={
             new Date().getFullYear() + '-' +
             ((new Date().getMonth() + 1) < 10 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth() + 1)) + '-' +
             (new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate()) + 'T' +
             (new Date().getHours() < 10 ? '0' + new Date().getHours() : new Date().getHours()) + ':' +
             (new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes())
-          "
+          }
           required
           onChange={(e) => {
                 setGoal({...goal, deadline: convertDate(e.target.value)})
