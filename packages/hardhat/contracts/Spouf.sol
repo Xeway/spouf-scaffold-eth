@@ -115,6 +115,7 @@ contract Spouf is KeeperCompatibleInterface {
             individualGoals[msg.sender][_index].amount <= USDC.balanceOf(address(this)),
             "Trying to withdraw more money than the contract has."
         );
+        require(individualGoals[msg.sender][_index].status == GoalStatus.Created, "Goal not up-to-date.");
 
         // we first give back the money to the user + the LINK fees
         bool LINKTransfer = LINK.transfer(msg.sender, LINK_FEES);
