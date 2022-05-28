@@ -87,8 +87,10 @@ contract Spouf is KeeperCompatibleInterface {
         bool USDCTransfer = USDC.transferFrom(msg.sender, address(this), _amount);
         require(USDCTransfer, "Transaction failed.");
 
+        Goal[] memory m_userGoals = individualGoals[msg.sender];
+
         // check if the user already has goals in order to not distort usersCommitted value
-        if (individualGoals[msg.sender].length == 0) {
+        if (m_userGoals.length == 0) {
             usersCommitted.push(msg.sender);
         }
         
@@ -110,18 +112,20 @@ contract Spouf is KeeperCompatibleInterface {
     }
 
     function deleteGoal(uint _index, bool _completed) external {
-        require(_index < individualGoals[msg.sender].length, "Index out of bound.");
+        Goal[] memory m_userGoals = individualGoals[msg.sender];
+
+        require(_index < m_userGoals.length, "Index out of bound.");
         require(
-            individualGoals[msg.sender][_index].amount <= USDC.balanceOf(address(this)),
+            m_userGoals[_index].amount <= USDC.balanceOf(address(this)),
             "Trying to withdraw more money than the contract has."
         );
-        require(individualGoals[msg.sender][_index].status == GoalStatus.Created, "Goal not up-to-date.");
+        require(m_userGoals[_index].status == GoalStatus.Created, "Goal not up-to-date.");
 
         // we first give back the money to the user + the LINK fees
         bool LINKTransfer = LINK.transfer(msg.sender, LINK_FEES);
         require(LINKTransfer, "Failed to withdraw LINK from contract.");
 
-        bool USDCTransfer = USDC.transfer(msg.sender, individualGoals[msg.sender][_index].amount);
+        bool USDCTransfer = USDC.transfer(msg.sender, m_userGoals[_index].amount);
         require(USDCTransfer, "Failed to withdraw money from contract.");
 
         if (_completed) {
@@ -131,7 +135,7 @@ contract Spouf is KeeperCompatibleInterface {
         }
         
         // check if the user already has goals in order to not distort usersCommitted's value
-        if (individualGoals[msg.sender].length == 0) {
+        if (m_userGoals.length == 0) {
             // gas saving
             address[] memory m_usersCommitted = usersCommitted;
             
@@ -147,7 +151,7 @@ contract Spouf is KeeperCompatibleInterface {
             }
         }
 
-        globalBalance -= individualGoals[msg.sender][_index].amount;
+        globalBalance -= m_userGoals[_index].amount;
         emit UpdateGlobalBalance(globalBalance);
 
         emit UpdateGoals(individualGoals[msg.sender]);
@@ -164,8 +168,10 @@ contract Spouf is KeeperCompatibleInterface {
         // we loop over all the users
         for (uint i = 0; i < m_usersCommitted.length; i++) {
             // we loop over every goals of every users
-            for (uint j = 0; j < individualGoals[m_usersCommitted[i]].length; j++) {
-                if (individualGoals[m_usersCommitted[i]][j].deadline < block.timestamp && individualGoals[m_usersCommitted[i]][j].status == GoalStatus.Created) {
+            Goal[] memory m_userGoals = individualGoals[m_usersCommitted[i]];
+
+            for (uint j = 0; j < m_userGoals.length; j++) {
+                if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
                     upkeepNeeded = true;
                     performData = abi.encode(GoalOOD(m_usersCommitted[i], j));
                     // not necessary but gas efficient because you stop computation as soon as a first condition met
@@ -187,8 +193,10 @@ contract Spouf is KeeperCompatibleInterface {
         // we loop over all the users
         for (uint i = 0; i < m_usersCommitted.length; i++) {
             // we loop over every goals of every users
-            for (uint j = 0; j < individualGoals[m_usersCommitted[i]].length; j++) {
-                if (individualGoals[m_usersCommitted[i]][j].deadline < block.timestamp && individualGoals[m_usersCommitted[i]][j].status == GoalStatus.Created) {
+            Goal[] memory m_userGoals = individualGoals[m_usersCommitted[i]];
+
+            for (uint j = 0; j < m_userGoals.length; j++) {
+                if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
                     upkeepValidated = true;
                 }
             }
@@ -199,24 +207,26 @@ contract Spouf is KeeperCompatibleInterface {
 
         // OOD stands for "out-of-date"
         GoalOOD memory goalOOD = abi.decode(performData, (GoalOOD));
+
+        Goal[] memory m_indivGoals = individualGoals[goalOOD.addr];
         
         // in the following parts, we have the possibility to reuse other function such as deleteGoal(), why we don't do that is for the gas-efficiency, according to this response I got, it's better to copy paste code https://discord.com/channels/435685690936786944/447826495638077462/954099549142671381
 
         require(
-            individualGoals[goalOOD.addr][goalOOD.index].amount <= USDC.balanceOf(address(this)),
+            m_indivGoals[goalOOD.index].amount <= USDC.balanceOf(address(this)),
             "Trying to withdraw more money than the contract has."
         );
 
         // as explicity said, the money lost goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, individualGoals[goalOOD.addr][goalOOD.index].amount.div(100).mul(10));
-        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, individualGoals[goalOOD.addr][goalOOD.index].amount.div(100).mul(90));
+        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, m_indivGoals[goalOOD.index].amount.div(100).mul(10));
+        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, m_indivGoals[goalOOD.index].amount.div(100).mul(90));
         require(successTeam && successCharities, "Failed to withdraw money from contract.");
 
         individualGoals[goalOOD.addr][goalOOD.index].status = GoalStatus.Expired;
 
         // check if the user already has goals in order to not distort usersCommitted's value
-        if (individualGoals[goalOOD.addr].length == 0) {                
+        if (m_indivGoals.length == 0) {                
             // we loop over the array to pick the searched user
             for (uint m = 0; m < m_usersCommitted.length; m++) {
                 if (m_usersCommitted[m] == goalOOD.addr) {
@@ -229,10 +239,10 @@ contract Spouf is KeeperCompatibleInterface {
             }
         }
 
-        globalBalance -= individualGoals[goalOOD.addr][goalOOD.index].amount;
+        globalBalance -= m_indivGoals[goalOOD.index].amount;
         emit UpdateGlobalBalance(globalBalance);
 
-        emit UpdateGoals(individualGoals[msg.sender]);
+        emit UpdateGoals(individualGoals[goalOOD.addr]);
     }
 
 }
