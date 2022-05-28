@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Divider } from "antd";
 import { Address } from "../components";
+import moment from "moment";
 
 /**
  * web3 props can be passed from '../App.jsx' into your local view component for use
@@ -20,15 +21,74 @@ function Home({ yourLocalBalance, readContracts, writeContracts, address, mainne
   const [goals, setGoals] = useState([]);
 
   useEffect(() => {
-    async function fetchGoals() {
-      const result = await writeContracts.Spouf.getGoal();
-      setGoals(result);
+    async function fetchGoals(updateNeeded, newGoals) {
+      let result;
+      if (updateNeeded) {
+        result = newGoals;
+      } else {
+        result = await writeContracts.Spouf.getGoal();
+      }
+
+      const arr = [];
+
+      result.forEach(goal => {
+        let g, deadline, amount, status;
+        for (const key of goal.keys()) {
+          switch (key) {
+            case 0:
+              g = goal[key];
+              break;
+            case 1:
+              deadline = goal[key];
+              break;
+            case 2:
+              amount = goal[key];
+              break;
+            case 3:
+              status = goal[key];
+              break;
+          }
+        }
+
+        arr.push({
+          goal: g,
+          deadline: deadline,
+          amount: amount,
+          status: status,
+          timeLeft: null
+        });
+      });
+
+      setGoals(arr);
+
+      writeContracts.Spouf.on("UpdateGoals", (updatedGoals) => {
+        fetchGoals(true, updatedGoals);
+      });
     }
 
     if (writeContracts.Spouf !== undefined) {
-      fetchGoals();
+      fetchGoals(false, null);
     }
   }, [writeContracts.Spouf]);
+
+  function computeTimeLeft(deadline, index) {
+    window.setInterval(() => {
+      const now = moment();
+      const timeLeft = moment.duration(moment(new Date(deadline)).diff(now));
+
+      const newArr = [...goals];
+      newArr[index].timeLeft = `
+      ${timeLeft.years() > 0 ? timeLeft.years() + " years" : ""}
+      ${timeLeft.months() > 0 || timeLeft.years() > 0 ? timeLeft.months() + " months" : ""}
+      ${timeLeft.days() > 0 || timeLeft.months() > 0 ? timeLeft.days() + " days" : ""}
+      ${timeLeft.hours() > 0 || timeLeft.days() > 0 ? timeLeft.hours() + " hours" : ""}
+      ${timeLeft.minutes() > 0 || timeLeft.hours() > 0 ? timeLeft.minutes() + " minutes" : ""}
+      ${timeLeft.seconds() > 0 || timeLeft.minutes() > 0 ? timeLeft.seconds() + " seconds" : ""}
+      `;
+      
+      setGoals(newArr);
+    }, 1000);
+  }
 
   return (
     <div>
@@ -46,7 +106,7 @@ function Home({ yourLocalBalance, readContracts, writeContracts, address, mainne
               <h4 style={{ margin: 0, padding: 0 }}>Name</h4>{ goal.goal }<br/>
               <h4 style={{ margin: 0, padding: 0 }}>Deadline</h4>{ new Date(goal.deadline * 1000).toString().slice(0, 21) }<br/>
               <h4 style={{ margin: 0, padding: 0 }}>Pledge</h4>{ utils.formatUnits(goal.amount, 6) } USDC<br/>
-              { goal.status === 1 ? "Completed" : (goal.status === 2 ? "Expired" : (goal.status === 3 ? "Cancelled" : "")) }
+              <h4 style={{ margin: 0, padding: 0 }}>{ computeTimeLeft(goal.deadline * 1000, index) }{ goal.timeLeft }</h4>
             </li>
           })}
         </ul>
