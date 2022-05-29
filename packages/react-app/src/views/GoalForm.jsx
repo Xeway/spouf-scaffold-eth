@@ -76,6 +76,7 @@ function GoalForm({ readContracts, writeContracts, tx }) {
       </div>
 
       <Button
+      type="primary"
       style={{ marginTop: 8, width: "30%" }}
       onClick={async () => {
           // USDC approval

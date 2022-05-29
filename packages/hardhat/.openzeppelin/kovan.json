@@ -281,6 +281,136 @@
           }
         }
       }
+    },
+    "7a82128346ddeea72d33f5871c551fc98a1f49c8ba7ce2c49d6fa41dbcc92451": {
+      "address": "0x1a44eE05B12A1d5974180e8BEf8A361f0dFa4624",
+      "txHash": "0x40b8ccdc6ebf421f84fd9cf686f91d1bf4ef019d191e65afc1c98e87fdd96210",
+      "layout": {
+        "storage": [
+          {
+            "label": "globalBalance",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:14"
+          },
+          {
+            "label": "usersCommitted",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:33"
+          },
+          {
+            "label": "individualGoals",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_array(t_struct(Goal)485_storage)dyn_storage)",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:34"
+          },
+          {
+            "label": "initialized",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bool",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:41"
+          },
+          {
+            "label": "USDC",
+            "offset": 1,
+            "slot": "3",
+            "type": "t_contract(IERC20)135",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:42"
+          },
+          {
+            "label": "LINK",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IERC20)135",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Goal)485_storage)dyn_storage": {
+            "label": "struct Spouf.Goal[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IERC20)135": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_enum(GoalStatus)475": {
+            "label": "enum Spouf.GoalStatus",
+            "members": [
+              "Created",
+              "Completed",
+              "Expired",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_array(t_struct(Goal)485_storage)dyn_storage)": {
+            "label": "mapping(address => struct Spouf.Goal[])",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Goal)485_storage": {
+            "label": "struct Spouf.Goal",
+            "members": [
+              {
+                "label": "goal",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(GoalStatus)475",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
     }
   }
 }

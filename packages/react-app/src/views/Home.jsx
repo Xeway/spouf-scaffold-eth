@@ -4,7 +4,7 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Divider } from "antd";
+import { Divider, Button, Checkbox } from "antd";
 import { Address } from "../components";
 import moment from "moment";
 
@@ -14,7 +14,7 @@ import moment from "moment";
  * @param {*} readContracts contracts from current chain already pre-loaded using ethers contract module. More here https://docs.ethers.io/v5/api/contract/contract/
  * @returns react component
  **/
-function Home({ yourLocalBalance, readContracts, writeContracts, address, mainnetProvider }) {
+function Home({ tx, yourLocalBalance, readContracts, writeContracts, address, mainnetProvider }) {
   // you can also use hooks locally in your component of choice
   // in this case, let's keep track of 'purpose' variable from our contract
 
@@ -90,9 +90,39 @@ function Home({ yourLocalBalance, readContracts, writeContracts, address, mainne
     }, 1000);
   }
 
+  async function deleteGoal(index, completed, event) {
+    if (index < goals.length) {
+      if (completed) {
+        if (event.target.checked) {
+          const transaction = await tx(writeContracts.Spouf.deleteGoal(index, completed));
+          console.log(transaction);
+          if (transaction === undefined) {
+            event.target.checked = false;
+            event.target.parentElement.classList.remove("ant-checkbox-checked");
+          }
+        }
+      } else {
+        await tx(writeContracts.Spouf.deleteGoal(index, completed));
+      }
+    } else {
+      console.log("Failed (index out of bound).");
+    }
+  }
+
   return (
     <div>
       <div style={{ margin: 32, fontSize: 18 }}>
+        {goals.length === 0 &&
+        <>
+          <h1>Hey there 👋</h1>
+          <h3>We all procrastinate, right ?<br/>
+          If you're searching to stop that, this dapp is made for <b>you</b> 😎</h3>
+          <h4>You have a goal but you're too lazy to accomplish it ? Why not lose money if you don't complete this objective?<br/>
+          Go to<Button type="link" href="./create-goal">Create goal</Button>to add yours.</h4>
+          <Divider dashed />
+        </>
+        }
+
         Connected with: <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
         <p>Balance: <span style={{ fontWeight: "bold" }}>{ethers.utils.formatEther(yourLocalBalance)} ETH</span></p>
       </div>
@@ -102,14 +132,24 @@ function Home({ yourLocalBalance, readContracts, writeContracts, address, mainne
       <div style={{ margin: 32, display: "flex", justifyContent: "center", alignItems: "center" }}>
         <ul>
           {goals.map((goal, index) => {
-            return <li key={index} style={{ margin: 16, padding: 12, fontSize: "1.2rem", textAlign: "start", listStyleType: "none", border: "1px solid #cccccc", width: 400 }}>
-              <h4 style={{ margin: 0, padding: 0 }}>Name</h4>{ goal.goal }<br/>
-              <h4 style={{ margin: 0, padding: 0 }}>Deadline</h4>{ new Date(goal.deadline * 1000).toString().slice(0, 21) }<br/>
-              <h4 style={{ margin: 0, padding: 0 }}>Pledge</h4>{ utils.formatUnits(goal.amount, 6) } USDC<br/>
-              <h4 style={{ margin: 0, padding: 0 }}>{ computeTimeLeft(goal.deadline * 1000, index) }{ goal.timeLeft }</h4>
-            </li>
+            if (goal.status === 0) {
+              return <li key={index} style={{ margin: 16, padding: 12, fontSize: "1.2rem", textAlign: "start", listStyleType: "none", border: "1px solid #cccccc", width: 400 }}>
+                <h4 style={{ margin: 0, padding: 0 }}>Name</h4>{ goal.goal }<br/>
+                <h4 style={{ margin: 0, padding: 0 }}>Deadline</h4>{ new Date(goal.deadline * 1000).toString().slice(0, 21) }<br/>
+                <h4 style={{ margin: 0, padding: 0 }}>Pledge</h4>{ utils.formatUnits(goal.amount, 6) } USDC<br/>
+                <h4 style={{ margin: 0, padding: 0, color:"#8A817C" }}>{ computeTimeLeft(goal.deadline * 1000, index) }{ goal.timeLeft }</h4>
+
+                <span style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <Checkbox onClick={(e) => { deleteGoal(index, true, e) }} style={{ marginRight: 10 }}>Complete</Checkbox>
+                  <Button onClick={() => { deleteGoal(index, false, null) }} type="primary" style={{ marginLeft: 10, backgroundColor: "red" }}>Delete</Button>
+                </span>
+              </li>
+            }
           })}
         </ul>
+        {(goals.filter(goal => goal.status === 0).length === 0) &&
+          <h3>You have no goal up-to-date for the moment 😶</h3>
+        }
       </div>
     </div>
   );
