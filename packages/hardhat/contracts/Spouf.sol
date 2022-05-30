@@ -189,6 +189,9 @@ contract Spouf {
         GoalOOD memory goalOOD = abi.decode(performData, (GoalOOD));
 
         Goal[] memory m_indivGoals = individualGoals[goalOOD.addr];
+
+        require(m_indivGoals[goalOOD.index].deadline < block.timestamp, "Goal hasn't expired yet.");
+        require(m_indivGoals[goalOOD.index].status == GoalStatus.Created, "Invalid goal.");
         
         // in the following parts, we have the possibility to reuse other function such as deleteGoal(), why we don't do that is for the gas-efficiency, according to this response I got, it's better to copy paste code https://discord.com/channels/435685690936786944/447826495638077462/954099549142671381
 
