@@ -185,24 +185,6 @@ contract Spouf {
         // gas saving
         address[] memory m_usersCommitted = usersCommitted;
 
-        // { we revalidate the upkeep (as adviced in the doc)
-
-        bool upkeepValidated = false;
-        // we loop over all the users
-        for (uint i = 0; i < m_usersCommitted.length; i++) {
-            // we loop over every goals of every users
-            Goal[] memory m_userGoals = individualGoals[m_usersCommitted[i]];
-
-            for (uint j = 0; j < m_userGoals.length; j++) {
-                if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
-                    upkeepValidated = true;
-                }
-            }
-        }
-        require(upkeepValidated, "There is a problem with Chainlink.");
-
-        // }
-
         // OOD stands for "out-of-date"
         GoalOOD memory goalOOD = abi.decode(performData, (GoalOOD));
 
