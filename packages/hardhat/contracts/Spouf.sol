@@ -67,7 +67,7 @@ contract Spouf {
         require(successTeam && successCharities, "Failed to donate.");
     }
 
-    function setGoal(string memory _goal, uint _deadline, uint _amount) external {
+    function setGoal(string calldata _goal, uint _deadline, uint _amount) external {
         require(
             _amount >= 1,
             "The user sent an incorrect amount of money."
