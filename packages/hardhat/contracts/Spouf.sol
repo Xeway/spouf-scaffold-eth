@@ -34,16 +34,14 @@ contract Spouf {
 
     bool initialized;
     IERC20 USDC;
-    IERC20 LINK;
 
-    uint public constant LINK_FEES = 0.2 ether;
+    uint public constant FEES = 0.2 ether;
 
     // constructor
-    function initialize(address _USDCAddress, address _LINKAddress) public {
+    function initialize(address _USDCAddress) public {
         require(!initialized, "Contract instance has already been initialized.");
         initialized = true;
         USDC = IERC20(_USDCAddress);
-        LINK = IERC20(_LINKAddress);
     }
 
     fallback() external payable {
@@ -73,10 +71,6 @@ contract Spouf {
             "The user sent an incorrect amount of money."
         );
         require(_deadline > block.timestamp, "Deadline too short.");
-
-        // the user sends 0.2 LINK in case performUpkeep is executed
-        bool LINKTransfer = LINK.transferFrom(msg.sender, address(this), LINK_FEES);
-        require(LINKTransfer, "LINK transaction failed.");
 
         bool USDCTransfer = USDC.transferFrom(msg.sender, address(this), _amount);
         require(USDCTransfer, "Transaction failed.");
@@ -114,10 +108,6 @@ contract Spouf {
             "Trying to withdraw more money than the contract has."
         );
         require(m_userGoals[_index].status == GoalStatus.Created, "Goal not up-to-date.");
-
-        // we first give back the money to the user + the LINK fees
-        bool LINKTransfer = LINK.transfer(msg.sender, LINK_FEES);
-        require(LINKTransfer, "Failed to withdraw LINK from contract.");
 
         bool USDCTransfer = USDC.transfer(msg.sender, m_userGoals[_index].amount);
         require(USDCTransfer, "Failed to withdraw money from contract.");
