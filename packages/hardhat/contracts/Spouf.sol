@@ -5,8 +5,9 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Spouf {
+contract Spouf is Ownable {
 
     using SafeMath for uint;
 
@@ -35,13 +36,22 @@ contract Spouf {
     bool initialized;
     IERC20 USDC;
 
-    uint public constant FEES = 0.2 ether;
+    uint public FEES;
 
     // constructor
     function initialize(address _USDCAddress) public {
         require(!initialized, "Contract instance has already been initialized.");
         initialized = true;
         USDC = IERC20(_USDCAddress);
+        changeFees(0.01 ether);
+    }
+
+    function changeFees(uint newFees) public onlyOwner {
+        FEES = newFees;
+    }
+
+    function changeUSDCAddress(address newAddress) public onlyOwner {
+        USDC = IERC20(newAddress);
     }
 
     fallback() external payable {
