@@ -32,11 +32,6 @@ contract Spouf {
     address[] usersCommitted;
     mapping(address => Goal[]) individualGoals;
 
-    struct GoalOOD {
-        address addr;
-        uint index;
-    }
-
     bool initialized;
     IERC20 USDC;
     IERC20 LINK;
@@ -171,7 +166,7 @@ contract Spouf {
             for (uint j = 0; j < m_userGoals.length; j++) {
                 if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
                     canExec = true;
-                    execPayload = abi.encodeWithSelector(this.executeGoalOutOfDate.selector, abi.encode(GoalOOD(m_usersCommitted[i], j)));
+                    execPayload = abi.encodeWithSelector(this.executeGoalOutOfDate.selector, address(m_usersCommitted[i]), uint(j));
                     // not necessary but gas efficient because you stop computation as soon as a first condition met
                     return (canExec, execPayload);
                 }
@@ -181,38 +176,36 @@ contract Spouf {
     }
 
     // this function is executed if a goal is out of date
-    function executeGoalOutOfDate(bytes calldata performData) public {
+    // OOD stands for "out-of-date"
+    function executeGoalOutOfDate(address OODUserAddress, uint OODIndex) public {
         // gas saving
         address[] memory m_usersCommitted = usersCommitted;
 
-        // OOD stands for "out-of-date"
-        GoalOOD memory goalOOD = abi.decode(performData, (GoalOOD));
+        Goal[] memory m_indivGoals = individualGoals[OODUserAddress];
 
-        Goal[] memory m_indivGoals = individualGoals[goalOOD.addr];
-
-        require(m_indivGoals[goalOOD.index].deadline < block.timestamp, "Goal hasn't expired yet.");
-        require(m_indivGoals[goalOOD.index].status == GoalStatus.Created, "Invalid goal.");
+        require(m_indivGoals[OODIndex].deadline < block.timestamp, "Goal hasn't expired yet.");
+        require(m_indivGoals[OODIndex].status == GoalStatus.Created, "Invalid goal.");
         
         // in the following parts, we have the possibility to reuse other function such as deleteGoal(), why we don't do that is for the gas-efficiency, according to this response I got, it's better to copy paste code https://discord.com/channels/435685690936786944/447826495638077462/954099549142671381
 
         require(
-            m_indivGoals[goalOOD.index].amount <= USDC.balanceOf(address(this)),
+            m_indivGoals[OODIndex].amount <= USDC.balanceOf(address(this)),
             "Trying to withdraw more money than the contract has."
         );
 
         // as explicity said, the money lost goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, m_indivGoals[goalOOD.index].amount.div(100).mul(10));
-        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, m_indivGoals[goalOOD.index].amount.div(100).mul(90));
+        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, m_indivGoals[OODIndex].amount.div(100).mul(10));
+        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, m_indivGoals[OODIndex].amount.div(100).mul(90));
         require(successTeam && successCharities, "Failed to withdraw money from contract.");
 
-        individualGoals[goalOOD.addr][goalOOD.index].status = GoalStatus.Expired;
+        individualGoals[OODUserAddress][OODIndex].status = GoalStatus.Expired;
 
         // check if the user already has goals in order to not distort usersCommitted's value
         if (m_indivGoals.length == 0) {                
             // we loop over the array to pick the searched user
             for (uint m = 0; m < m_usersCommitted.length; m++) {
-                if (m_usersCommitted[m] == goalOOD.addr) {
+                if (m_usersCommitted[m] == OODUserAddress) {
                     // extremely expensive lol, same process as above, see : https://solidity-by-example.org/array/#examples-of-removing-array-element
                     for (uint n = m; n < m_usersCommitted.length - 1; n++) {
                         usersCommitted[n] = usersCommitted[n + 1];
@@ -222,100 +215,10 @@ contract Spouf {
             }
         }
 
-        globalBalance -= m_indivGoals[goalOOD.index].amount;
+        globalBalance -= m_indivGoals[OODIndex].amount;
         emit UpdateGlobalBalance(globalBalance);
 
-        emit UpdateGoals(individualGoals[goalOOD.addr]);
+        emit UpdateGoals(individualGoals[OODUserAddress]);
     }
-
-    /* These two functions were used when we used Chainlink Keepers instead of Gelato
-    // this function is used to check if a goal become out of date. We use ChainLink Keepers to execute that automatically.
-    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        // gas saving
-        address[] memory m_usersCommitted = usersCommitted;
-
-        upkeepNeeded = false;
-        performData = bytes("");
-        
-        // we loop over all the users
-        for (uint i = 0; i < m_usersCommitted.length; i++) {
-            // we loop over every goals of every users
-            Goal[] memory m_userGoals = individualGoals[m_usersCommitted[i]];
-
-            for (uint j = 0; j < m_userGoals.length; j++) {
-                if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
-                    upkeepNeeded = true;
-                    performData = abi.encode(GoalOOD(m_usersCommitted[i], j));
-                    // not necessary but gas efficient because you stop computation as soon as a first condition met
-                    return (upkeepNeeded, performData);
-                }
-            }
-        }
-        return (upkeepNeeded, performData);
-    }
-
-    // this function is executed if a goal is out of date
-    function performUpkeep(bytes calldata performData) external override {
-        // gas saving
-        address[] memory m_usersCommitted = usersCommitted;
-
-        // { we revalidate the upkeep (as adviced in the doc)
-
-        bool upkeepValidated = false;
-        // we loop over all the users
-        for (uint i = 0; i < m_usersCommitted.length; i++) {
-            // we loop over every goals of every users
-            Goal[] memory m_userGoals = individualGoals[m_usersCommitted[i]];
-
-            for (uint j = 0; j < m_userGoals.length; j++) {
-                if (m_userGoals[j].deadline < block.timestamp && m_userGoals[j].status == GoalStatus.Created) {
-                    upkeepValidated = true;
-                }
-            }
-        }
-        require(upkeepValidated, "There is a problem with Chainlink.");
-
-        // }
-
-        // OOD stands for "out-of-date"
-        GoalOOD memory goalOOD = abi.decode(performData, (GoalOOD));
-
-        Goal[] memory m_indivGoals = individualGoals[goalOOD.addr];
-        
-        // in the following parts, we have the possibility to reuse other function such as deleteGoal(), why we don't do that is for the gas-efficiency, according to this response I got, it's better to copy paste code https://discord.com/channels/435685690936786944/447826495638077462/954099549142671381
-
-        require(
-            m_indivGoals[goalOOD.index].amount <= USDC.balanceOf(address(this)),
-            "Trying to withdraw more money than the contract has."
-        );
-
-        // as explicity said, the money lost goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
-        // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, m_indivGoals[goalOOD.index].amount.div(100).mul(10));
-        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, m_indivGoals[goalOOD.index].amount.div(100).mul(90));
-        require(successTeam && successCharities, "Failed to withdraw money from contract.");
-
-        individualGoals[goalOOD.addr][goalOOD.index].status = GoalStatus.Expired;
-
-        // check if the user already has goals in order to not distort usersCommitted's value
-        if (m_indivGoals.length == 0) {                
-            // we loop over the array to pick the searched user
-            for (uint m = 0; m < m_usersCommitted.length; m++) {
-                if (m_usersCommitted[m] == goalOOD.addr) {
-                    // extremely expensive lol, same process as above, see : https://solidity-by-example.org/array/#examples-of-removing-array-element
-                    for (uint n = m; n < m_usersCommitted.length - 1; n++) {
-                        usersCommitted[n] = usersCommitted[n + 1];
-                    }
-                    usersCommitted.pop();
-                }
-            }
-        }
-
-        globalBalance -= m_indivGoals[goalOOD.index].amount;
-        emit UpdateGlobalBalance(globalBalance);
-
-        emit UpdateGoals(individualGoals[goalOOD.addr]);
-    }
-    */
 
 }
