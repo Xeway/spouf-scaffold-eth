@@ -70,8 +70,8 @@ contract Spouf is Ownable {
 
         // as explicity said, the money donated goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        (bool successTeam, ) = (0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1).call{value: msg.value.div(100).mul(10)}("");
-        (bool successCharities, ) = (0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C).call{value: msg.value.div(100).mul(90)}("");
+        (bool successTeam, ) = payable(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1).call{value: msg.value.div(100).mul(10)}("");
+        (bool successCharities, ) = payable(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C).call{value: msg.value.div(100).mul(90)}("");
         require(successTeam && successCharities, "Failed to donate.");
     }
 
