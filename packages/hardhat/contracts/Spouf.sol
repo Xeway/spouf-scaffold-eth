@@ -40,9 +40,9 @@ contract Spouf is Initializable, OwnableUpgradeable {
 
     // constructor
     function initialize(address _USDCAddress) public initializer {
+        __Ownable_init();
         USDC = IERC20Upgradeable(_USDCAddress);
         changeFees(0.01 ether);
-        __Ownable_init();
     }
 
     function changeFees(uint newFees) public onlyOwner {
