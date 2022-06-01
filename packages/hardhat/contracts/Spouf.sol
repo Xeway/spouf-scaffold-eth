@@ -3,14 +3,14 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract Spouf is Ownable, Initializable {
+contract Spouf is Initializable, OwnableUpgradeable {
 
-    using SafeMath for uint;
+    using SafeMathUpgradeable for uint;
 
     uint public globalBalance;
 
@@ -34,14 +34,15 @@ contract Spouf is Ownable, Initializable {
     address[] usersCommitted;
     mapping(address => Goal[]) individualGoals;
 
-    IERC20 USDC;
+    IERC20Upgradeable USDC;
 
     uint public FEES;
 
     // constructor
     function initialize(address _USDCAddress) public initializer {
-        USDC = IERC20(_USDCAddress);
+        USDC = IERC20Upgradeable(_USDCAddress);
         changeFees(0.01 ether);
+        __Ownable_init();
     }
 
     function changeFees(uint newFees) public onlyOwner {
@@ -49,7 +50,7 @@ contract Spouf is Ownable, Initializable {
     }
 
     function changeUSDCAddress(address newAddress) public onlyOwner {
-        USDC = IERC20(newAddress);
+        USDC = IERC20Upgradeable(newAddress);
     }
 
     fallback() external payable {
