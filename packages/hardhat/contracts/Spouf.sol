@@ -74,15 +74,24 @@ contract Spouf is Initializable, OwnableUpgradeable {
         require(successTeam && successCharities, "Failed to donate.");
     }
 
-    function setGoal(string calldata _goal, uint _deadline, uint _amount) external {
+    function setGoal(string calldata _goal, uint _deadline, uint _amount) external payable {
         require(
             _amount >= 1,
             "The user sent an incorrect amount of money."
         );
+        require(msg.value >= FEES, "Insufficient fees.");
         require(_deadline > block.timestamp, "Deadline too short.");
 
         bool USDCTransfer = USDC.transferFrom(msg.sender, address(this), _amount);
         require(USDCTransfer, "Transaction failed.");
+
+        // if the user sent more fees than expected, we donate the rest to charities
+        if (msg.value > FEES) {
+            (bool donateTransfer, ) = payable(address(this)).call{value: msg.value - FEES}(
+                abi.encodeWithSignature("donate()")
+            );
+            require(donateTransfer, "Donation failed.");
+        }
 
         Goal[] memory m_userGoals = individualGoals[msg.sender];
 
