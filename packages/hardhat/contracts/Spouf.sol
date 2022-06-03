@@ -8,7 +8,10 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract Spouf is Initializable, OwnableUpgradeable {
+import "./ops/OpsReady_adapted.sol";
+// import {ETH} from "../lib/ops/contracts/vendor/gelato/FGelato.sol";
+
+contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
 
     using SafeMathUpgradeable for uint;
 
@@ -38,19 +41,37 @@ contract Spouf is Initializable, OwnableUpgradeable {
 
     uint public FEES;
 
+    address public DEV_ADDRESS = 0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1;
+    address public CHARITY_ADDRESS = 0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C;
+
     // constructor
-    function initialize(address _USDCAddress) public initializer {
+    function initialize(address _USDCAddress, address _opsAddress) public initializer {
         __Ownable_init();
         USDC = IERC20Upgradeable(_USDCAddress);
+        ops = _opsAddress;
+        gelato = IOps(_opsAddress).gelato();
         changeFees(0.01 ether);
     }
 
-    function changeFees(uint newFees) public onlyOwner {
-        FEES = newFees;
+    function changeDevAddress(address _newAddress) public onlyOwner {
+        DEV_ADDRESS = _newAddress;
     }
 
-    function changeUSDCAddress(address newAddress) public onlyOwner {
-        USDC = IERC20Upgradeable(newAddress);
+    function changeCharityAddress(address _newAddress) public onlyOwner {
+        CHARITY_ADDRESS = _newAddress;
+    }
+
+    function changeFees(uint _newFees) public onlyOwner {
+        FEES = _newFees;
+    }
+
+    function changeUSDCAddress(address _newAddress) public onlyOwner {
+        USDC = IERC20Upgradeable(_newAddress);
+    }
+
+    function changeOpsAddress(address _newAddress) public onlyOwner {
+        ops = _newAddress;
+        gelato = IOps(_newAddress).gelato();
     }
 
     fallback() external payable {
@@ -69,8 +90,8 @@ contract Spouf is Initializable, OwnableUpgradeable {
 
         // as explicity said, the money donated goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        (bool successTeam, ) = payable(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1).call{value: msg.value.div(100).mul(10)}("");
-        (bool successCharities, ) = payable(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C).call{value: msg.value.div(100).mul(90)}("");
+        (bool successTeam, ) = payable(DEV_ADDRESS).call{value: msg.value.div(100).mul(10)}("");
+        (bool successCharities, ) = payable(CHARITY_ADDRESS).call{value: msg.value.div(100).mul(90)}("");
         require(successTeam && successCharities, "Failed to donate.");
     }
 
@@ -125,10 +146,14 @@ contract Spouf is Initializable, OwnableUpgradeable {
             m_userGoals[_index].amount <= USDC.balanceOf(address(this)),
             "Trying to withdraw more money than the contract has."
         );
+        require(FEES <= address(this).balance, "Contract hasn't enough funds.");
         require(m_userGoals[_index].status == GoalStatus.Created, "Goal not up-to-date.");
 
         bool USDCTransfer = USDC.transfer(msg.sender, m_userGoals[_index].amount);
         require(USDCTransfer, "Failed to withdraw money from contract.");
+
+        (bool feesTransfer, ) = payable(msg.sender).call{value: FEES}("");
+        require(feesTransfer, "Failed to withdraw money from contract.");
 
         if (_completed) {
             individualGoals[msg.sender][_index].status = GoalStatus.Completed;
@@ -185,7 +210,7 @@ contract Spouf is Initializable, OwnableUpgradeable {
 
     // this function is executed if a goal is out of date
     // OOD stands for "out-of-date"
-    function executeGoalOutOfDate(address OODUserAddress, uint OODIndex) public {
+    function executeGoalOutOfDate(address OODUserAddress, uint OODIndex) public onlyOps {
         // gas saving
         address[] memory m_usersCommitted = usersCommitted;
 
@@ -203,9 +228,22 @@ contract Spouf is Initializable, OwnableUpgradeable {
 
         // as explicity said, the money lost goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        bool successTeam = USDC.transfer(0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1, m_indivGoals[OODIndex].amount.div(100).mul(10));
-        bool successCharities = USDC.transfer(0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C, m_indivGoals[OODIndex].amount.div(100).mul(90));
+        bool successTeam = USDC.transfer(DEV_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(10));
+        bool successCharities = USDC.transfer(CHARITY_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(90));
         require(successTeam && successCharities, "Failed to withdraw money from contract.");
+
+        // we pay for the execution thanks to Gelato
+        uint fee;
+        address feeToken;
+
+        (fee, feeToken) = IOps(ops).getFeeDetails();
+        _transfer(fee, feeToken);
+
+        // we give back the fees surplus to the user
+        if (FEES > fee) {
+            (bool transferFees, ) = payable(OODUserAddress).call{value: FEES - fee}("");
+            require(transferFees, "Failed to give back fees.");
+        }
 
         individualGoals[OODUserAddress][OODIndex].status = GoalStatus.Expired;
 

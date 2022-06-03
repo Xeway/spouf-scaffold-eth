@@ -22,7 +22,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   console.log("Account balance: ", accountBalance.toString());
 
   const proxyContractFactory = await hre.ethers.getContractFactory("Spouf");
-  const proxyContract = await upgrades.deployProxy(proxyContractFactory, ["0xb7a4F3E9097C08dA09517b5aB877F7a917224ede"], { initializer: 'initialize' });
+  const proxyContract = await upgrades.deployProxy(proxyContractFactory, ["0xb7a4F3E9097C08dA09517b5aB877F7a917224ede", "0x340759c8346A1E6Ed92035FB8B6ec57cE1D82c2c"], { initializer: 'initialize' });
 
   await proxyContract.deployed();
 

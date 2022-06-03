@@ -5,12 +5,12 @@ import { Input, Button } from "antd";
 import { useState } from "react";
 
 function GoalForm({ readContracts, writeContracts, tx }) {
-    let [linkFees, setLinkFees]= useState("");
+    let [fees, setFees]= useState("");
     
     useEffect(() => {
         async function fetchFees() {
-          const fees = await readContracts.Spouf.LINK_FEES();
-          setLinkFees(utils.formatUnits(fees, 18));
+          const fees = await readContracts.Spouf.FEES();
+          setFees(utils.formatEther(fees));
         }
 
         if (readContracts.Spouf !== undefined) {
@@ -80,19 +80,18 @@ function GoalForm({ readContracts, writeContracts, tx }) {
       style={{ marginTop: 8, width: "30%" }}
       onClick={async () => {
           // USDC approval
-        tx(writeContracts.USDC.approve(writeContracts.Spouf.address, goal.amount)).then((USDCTx) => {
-          // LINK approval
+        tx(writeContracts.USDC.approve(writeContracts.Spouf.address, goal.amount)).then(async (USDCTx) => {
+          // Main tx
           if (USDCTx) {
-            tx(writeContracts.LINK.approve(writeContracts.Spouf.address, convertNumber("0.2", 18))).then(async (LINKTx) => {
-              if (LINKTx) {
-                await tx(writeContracts.Spouf.setGoal(
-                  goal.name,
-                  goal.deadline,
-                  goal.amount,
-                  { gasLimit: 300000 }
-                ));
+            await tx(writeContracts.Spouf.setGoal(
+              goal.name,
+              goal.deadline,
+              goal.amount,
+              {
+                value: utils.parseEther(fees),
+                gasLimit: 300000
               }
-            });
+            ));
           }
         });
       }}
@@ -101,7 +100,7 @@ function GoalForm({ readContracts, writeContracts, tx }) {
         <span style={{ fontWeight: "bold" }}>You'll have to accept 3 transactions coming one after another:</span>
         <ul style={{ textAlign: "start", listStylePosition: "inside" }}>
             <li>1. Grant the permission for the contract to receive your USDC</li>
-            <li>2. Grant he permission for the contract to receive your { linkFees } LINK (used to pay for fees with Chainlink Keepers)</li>
+            <li>2. Grant he permission for the contract to receive your { fees } ETH (used to pay for fees on Gelato Network)</li>
             <li>3. Call the contract the create your goal</li>
         </ul>
       </div>
