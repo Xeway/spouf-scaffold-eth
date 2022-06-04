@@ -41,10 +41,10 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
 
     uint public FEES;
 
-    address public DEV_ADDRESS = 0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1;
-    address public CHARITY_ADDRESS = 0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C;
+    address public DEV_ADDRESS;
+    address public CHARITY_ADDRESS;
 
-    uint8 public PERCENTAGE_TO_DEV = 10;
+    uint8 public PERCENTAGE_TO_DEV;
 
     // constructor
     function initialize(address _USDCAddress, address _opsAddress) public initializer {
@@ -53,6 +53,9 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
         ops = _opsAddress;
         gelato = IOps(_opsAddress).gelato();
         changeFees(0.01 ether);
+        DEV_ADDRESS = 0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1;
+        CHARITY_ADDRESS = 0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C;
+        PERCENTAGE_TO_DEV = 10;
     }
 
     function changePercentageToDev(uint8 _newPercentage) public onlyOwner {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.0;
 
 // this contract come from https://github.com/gelatodigital/ops/blob/master/contracts/vendor/gelato/OpsReady.sol
 // just adapted it because Spouf contract doesn't support a constructor because it's a proxy
