@@ -5,7 +5,7 @@
          "chainId": "42",
          "contracts": {
             "Spouf": {
-               "address": "0xDADeBdEe61700f45a131C6170f6b908Af721F79d",
+               "address": "0xc85a18b5F08049F0cB3687D1e8D1F8502c80Aec5",
                "abi": [
                   {
                      "anonymous": false,
@@ -93,6 +93,45 @@
                   },
                   {
                      "inputs": [],
+                     "name": "CHARITY_ADDRESS",
+                     "outputs": [
+                        {
+                           "internalType": "address",
+                           "name": "",
+                           "type": "address"
+                        }
+                     ],
+                     "stateMutability": "view",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [],
+                     "name": "DEV_ADDRESS",
+                     "outputs": [
+                        {
+                           "internalType": "address",
+                           "name": "",
+                           "type": "address"
+                        }
+                     ],
+                     "stateMutability": "view",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [],
+                     "name": "ETH",
+                     "outputs": [
+                        {
+                           "internalType": "address",
+                           "name": "",
+                           "type": "address"
+                        }
+                     ],
+                     "stateMutability": "view",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [],
                      "name": "FEES",
                      "outputs": [
                         {
@@ -105,10 +144,49 @@
                      "type": "function"
                   },
                   {
+                     "inputs": [],
+                     "name": "PERCENTAGE_TO_DEV",
+                     "outputs": [
+                        {
+                           "internalType": "uint8",
+                           "name": "",
+                           "type": "uint8"
+                        }
+                     ],
+                     "stateMutability": "view",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [
+                        {
+                           "internalType": "address",
+                           "name": "_newAddress",
+                           "type": "address"
+                        }
+                     ],
+                     "name": "changeCharityAddress",
+                     "outputs": [],
+                     "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [
+                        {
+                           "internalType": "address",
+                           "name": "_newAddress",
+                           "type": "address"
+                        }
+                     ],
+                     "name": "changeDevAddress",
+                     "outputs": [],
+                     "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
                      "inputs": [
                         {
                            "internalType": "uint256",
-                           "name": "newFees",
+                           "name": "_newFees",
                            "type": "uint256"
                         }
                      ],
@@ -121,7 +199,33 @@
                      "inputs": [
                         {
                            "internalType": "address",
-                           "name": "newAddress",
+                           "name": "_newAddress",
+                           "type": "address"
+                        }
+                     ],
+                     "name": "changeOpsAddress",
+                     "outputs": [],
+                     "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [
+                        {
+                           "internalType": "uint8",
+                           "name": "_newPercentage",
+                           "type": "uint8"
+                        }
+                     ],
+                     "name": "changePercentageToDev",
+                     "outputs": [],
+                     "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [
+                        {
+                           "internalType": "address",
+                           "name": "_newAddress",
                            "type": "address"
                         }
                      ],
@@ -168,7 +272,7 @@
                   },
                   {
                      "inputs": [],
-                     "name": "donate",
+                     "name": "donateToProject",
                      "outputs": [],
                      "stateMutability": "payable",
                      "type": "function"
@@ -189,6 +293,19 @@
                      "name": "executeGoalOutOfDate",
                      "outputs": [],
                      "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [],
+                     "name": "gelato",
+                     "outputs": [
+                        {
+                           "internalType": "address payable",
+                           "name": "",
+                           "type": "address"
+                        }
+                     ],
+                     "stateMutability": "view",
                      "type": "function"
                   },
                   {
@@ -245,11 +362,29 @@
                            "internalType": "address",
                            "name": "_USDCAddress",
                            "type": "address"
+                        },
+                        {
+                           "internalType": "address",
+                           "name": "_opsAddress",
+                           "type": "address"
                         }
                      ],
                      "name": "initialize",
                      "outputs": [],
                      "stateMutability": "nonpayable",
+                     "type": "function"
+                  },
+                  {
+                     "inputs": [],
+                     "name": "ops",
+                     "outputs": [
+                        {
+                           "internalType": "address",
+                           "name": "",
+                           "type": "address"
+                        }
+                     ],
+                     "stateMutability": "view",
                      "type": "function"
                   },
                   {

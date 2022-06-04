@@ -34,6 +34,11 @@
       "address": "0xDADeBdEe61700f45a131C6170f6b908Af721F79d",
       "txHash": "0xef43b050a0c512fb4783c454cb52a5bce38b465673abd5706d336854593a72f4",
       "kind": "transparent"
+    },
+    {
+      "address": "0xc85a18b5F08049F0cB3687D1e8D1F8502c80Aec5",
+      "txHash": "0x1987ff583d7dc2055c561ca8c64e71e267bbd5c1ebf2d629903cab5eb32306e8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1285,6 +1290,225 @@
               {
                 "label": "status",
                 "type": "t_enum(GoalStatus)1419",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "c0864716c4411dec5c2613bbd56822c6cfc7d7e0e1470abb5e692ffe788bc8f8": {
+      "address": "0x77b234070186A439915d24f2D4B5E71A5C19dB53",
+      "txHash": "0xcff4641b049775e01f1d0eb0a234c5619761fd76690346b3636d99304f11a967",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:87"
+          },
+          {
+            "label": "ops",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OpsReady",
+            "src": "contracts\\ops\\OpsReady_adapted.sol:19"
+          },
+          {
+            "label": "gelato",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address_payable",
+            "contract": "OpsReady",
+            "src": "contracts\\ops\\OpsReady_adapted.sol:20"
+          },
+          {
+            "label": "globalBalance",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:18"
+          },
+          {
+            "label": "usersCommitted",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:37"
+          },
+          {
+            "label": "individualGoals",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_address,t_array(t_struct(Goal)1656_storage)dyn_storage)",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:38"
+          },
+          {
+            "label": "USDC",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_contract(IERC20Upgradeable)401",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:40"
+          },
+          {
+            "label": "FEES",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:42"
+          },
+          {
+            "label": "DEV_ADDRESS",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_address",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:44"
+          },
+          {
+            "label": "CHARITY_ADDRESS",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_address",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:45"
+          },
+          {
+            "label": "PERCENTAGE_TO_DEV",
+            "offset": 20,
+            "slot": "109",
+            "type": "t_uint8",
+            "contract": "Spouf",
+            "src": "contracts\\Spouf.sol:47"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_address_payable": {
+            "label": "address payable",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Goal)1656_storage)dyn_storage": {
+            "label": "struct Spouf.Goal[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IERC20Upgradeable)401": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_enum(GoalStatus)1646": {
+            "label": "enum Spouf.GoalStatus",
+            "members": [
+              "Created",
+              "Completed",
+              "Expired",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_array(t_struct(Goal)1656_storage)dyn_storage)": {
+            "label": "mapping(address => struct Spouf.Goal[])",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Goal)1656_storage": {
+            "label": "struct Spouf.Goal",
+            "members": [
+              {
+                "label": "goal",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(GoalStatus)1646",
                 "offset": 0,
                 "slot": "3"
               }
