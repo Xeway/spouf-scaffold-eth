@@ -81,25 +81,29 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
     }
 
     fallback() external payable {
-        donate();
+        donate(msg.value);
     }
 
     receive() external payable {
-        donate();
+        donate(msg.value);
     }
 
-    function donate() public payable {
+    function donate(uint _amount) internal {
         require(
-            msg.value >= 1 wei,
+            _amount >= 1 wei,
             "The user sent an incorrect amount of money."
         );
 
         // as explicity said, the money donated goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
         // this percentage can change overtime
-        (bool successTeam, ) = payable(DEV_ADDRESS).call{value: msg.value.div(100).mul(uint256(PERCENTAGE_TO_DEV))}("");
-        (bool successCharities, ) = payable(CHARITY_ADDRESS).call{value: msg.value.div(100).mul(100 - uint256(PERCENTAGE_TO_DEV))}("");
+        (bool successTeam, ) = payable(DEV_ADDRESS).call{value: _amount.div(100).mul(uint256(PERCENTAGE_TO_DEV))}("");
+        (bool successCharities, ) = payable(CHARITY_ADDRESS).call{value: _amount.div(100).mul(100 - uint256(PERCENTAGE_TO_DEV))}("");
         require(successTeam && successCharities, "Failed to donate.");
+    }
+
+    function donateToProject() public payable {
+        donate(msg.value);
     }
 
     function setGoal(string calldata _goal, uint _deadline, uint _amount) external payable {
@@ -115,10 +119,7 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
 
         // if the user sent more fees than expected, we donate the rest to charities
         if (msg.value > FEES) {
-            (bool donateTransfer, ) = payable(address(this)).call{value: msg.value - FEES}(
-                abi.encodeWithSignature("donate()")
-            );
-            require(donateTransfer, "Donation failed.");
+            donate(msg.value - FEES);
         }
 
         Goal[] memory m_userGoals = individualGoals[msg.sender];
