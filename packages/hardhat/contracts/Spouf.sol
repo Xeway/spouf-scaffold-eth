@@ -44,6 +44,8 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
     address public DEV_ADDRESS = 0xE4E6dC19efd564587C46dCa2ED787e45De17E7E1;
     address public CHARITY_ADDRESS = 0x750EF1D7a0b4Ab1c97B7A623D7917CcEb5ea779C;
 
+    uint8 public PERCENTAGE_TO_DEV = 10;
+
     // constructor
     function initialize(address _USDCAddress, address _opsAddress) public initializer {
         __Ownable_init();
@@ -53,6 +55,10 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
         changeFees(0.01 ether);
     }
 
+    function changePercentageToDev(uint8 _newPercentage) public onlyOwner {
+        PERCENTAGE_TO_DEV = _newPercentage;
+    }
+    
     function changeDevAddress(address _newAddress) public onlyOwner {
         DEV_ADDRESS = _newAddress;
     }
@@ -90,8 +96,9 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
 
         // as explicity said, the money donated goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        (bool successTeam, ) = payable(DEV_ADDRESS).call{value: msg.value.div(100).mul(10)}("");
-        (bool successCharities, ) = payable(CHARITY_ADDRESS).call{value: msg.value.div(100).mul(90)}("");
+        // this percentage can change overtime
+        (bool successTeam, ) = payable(DEV_ADDRESS).call{value: msg.value.div(100).mul(uint256(PERCENTAGE_TO_DEV))}("");
+        (bool successCharities, ) = payable(CHARITY_ADDRESS).call{value: msg.value.div(100).mul(100 - uint256(PERCENTAGE_TO_DEV))}("");
         require(successTeam && successCharities, "Failed to donate.");
     }
 
@@ -228,8 +235,8 @@ contract Spouf is Initializable, OwnableUpgradeable, OpsReady {
 
         // as explicity said, the money lost goes 10% for the Spouf team, and 90% for charities. Here we donate to GiveDirectly, see : https://donate.givedirectly.org/
         // we can't use rational numbers like 0.1, so we dividide by 100 and then multiply by 10 to get 10%
-        bool successTeam = USDC.transfer(DEV_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(10));
-        bool successCharities = USDC.transfer(CHARITY_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(90));
+        bool successTeam = USDC.transfer(DEV_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(uint256(PERCENTAGE_TO_DEV)));
+        bool successCharities = USDC.transfer(CHARITY_ADDRESS, m_indivGoals[OODIndex].amount.div(100).mul(100 - uint256(PERCENTAGE_TO_DEV)));
         require(successTeam && successCharities, "Failed to withdraw money from contract.");
 
         // we pay for the execution thanks to Gelato
